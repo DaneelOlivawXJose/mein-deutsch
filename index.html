@@ -1,0 +1,942 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f7f5">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icono-192.png">
+<link rel="apple-touch-icon" href="icono-192.png">
+<title>Mein Deutsch</title>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f7f7f5; --card:#fff; --ink:#1c1c1e; --muted:#6b6b70; --line:#e6e6e3; --soft:#f0f0ed; --accent:#1c1c1e;
+  --der:#2563eb; --die:#dc2626; --das:#16a34a; --der-bg:#eaf1ff; --die-bg:#fdecec; --das-bg:#e9f7ee;
+  --ok:#16a34a; --ko:#dc2626; --r:18px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:10px 16px calc(10px) 16px;display:flex;align-items:center;gap:10px}
+.logo{font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.flag{display:inline-flex;flex-direction:column;width:20px;height:14px;border-radius:2px;overflow:hidden}
+.flag i{flex:1}.flag i:nth-child(1){background:#111}.flag i:nth-child(2){background:#d00}.flag i:nth-child(3){background:#ffce00}
+.sync{margin-left:auto;border:1px solid var(--line);background:var(--card);border-radius:99px;padding:6px 12px;font-size:13px;color:var(--muted);max-width:62vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sync.warn{color:#b45309;border-color:#f3d9a8;background:#fff8eb}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{border:0;background:transparent;padding:10px 4px 12px;font-size:12px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
+nav.tabs button b{font-size:21px;line-height:1.1}
+nav.tabs button.on{color:var(--ink)}
+body.running nav.tabs{display:none}
+body.running{padding-bottom:0}
+.pad{padding:8px 16px 24px}
+.view{display:none}.view.on{display:block}
+.hide{display:none!important}
+h2{font-size:24px;letter-spacing:-.02em;margin:14px 0 4px}
+h3{font-size:15px;margin:18px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.sub{color:var(--muted);margin:0 0 12px;font-size:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.05)}
+label.f{display:block;font-size:13px;font-weight:700;color:var(--muted);margin:16px 0 8px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);padding:9px 14px;border-radius:999px;font-size:15px;color:var(--muted)}
+.chip.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.btn{border:1px solid var(--line);background:var(--card);padding:14px 18px;border-radius:14px;font-weight:700;font-size:17px}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.btn.block{display:block;width:100%;margin-top:16px;padding:18px;font-size:19px}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.ko{background:var(--ko);border-color:var(--ko);color:#fff}
+.btn.small{padding:8px 12px;font-size:14px;border-radius:10px}
+.toggle{display:flex;align-items:center;gap:10px;margin-top:16px;color:var(--muted);font-size:15px}
+.toggle input{width:22px;height:22px;accent-color:var(--accent)}
+.big-n{font-size:52px;font-weight:800;letter-spacing:-.03em;line-height:1}
+/* ejercicio en marcha: ocupa toda la pantalla, botones abajo */
+.run{display:flex;flex-direction:column;min-height:calc(100dvh - 58px);padding:8px 14px calc(14px + env(safe-area-inset-bottom))}
+.meta{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+.link{border:0;background:transparent;color:var(--muted);font-weight:600;padding:8px}
+.prog{height:6px;background:var(--soft);border-radius:99px;overflow:hidden;margin:4px 0 10px}
+.prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.flash{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;padding:40px 16px 24px;min-height:300px}
+.flash.good{border-color:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 22%,transparent)}
+.flash.bad{border-color:var(--ko);box-shadow:0 0 0 3px color-mix(in srgb,var(--ko) 22%,transparent)}
+.flash .tag{position:absolute;top:14px;left:16px;font-size:12px;color:var(--muted)}
+.speak{position:absolute;top:8px;right:8px;width:48px;height:48px;border-radius:14px;border:1px solid var(--line);background:var(--card);font-size:22px}
+.word{font-size:clamp(30px,9vw,44px);font-weight:800;letter-spacing:-.02em;line-height:1.15;word-break:break-word}
+.a{margin-right:.25em}.word .a{font-weight:650}
+.c-der{color:var(--der)}.c-die{color:var(--die)}.c-das{color:var(--das)}
+.sep{color:var(--muted);font-weight:400}
+.extra{color:var(--muted);margin-top:8px;font-size:16px}
+.forms{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;margin-top:10px;font-size:16px}
+.forms span{white-space:nowrap}
+.forms i{font-style:normal;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-right:4px}
+.answer{margin-top:20px;padding-top:18px;border-top:1px dashed var(--line);width:100%}
+.answer .es{font-size:24px;font-weight:700}
+.answer .ex{margin-top:10px;color:var(--muted);font-style:italic}
+.tap{margin-top:26px;color:var(--muted);font-size:14px}
+.rule{margin-top:10px;color:var(--muted);font-size:15px}
+.res{font-size:24px;font-weight:800}
+.bar2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.bar2 .btn{padding:22px 10px;font-size:19px}
+.bar3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px}
+.bar3 button{padding:22px 0;font-size:22px;font-weight:800;border-radius:16px;border:2px solid}
+.bar3 [data-a=der]{background:var(--der-bg);color:var(--der);border-color:var(--der)}
+.bar3 [data-a=die]{background:var(--die-bg);color:var(--die);border-color:var(--die)}
+.bar3 [data-a=das]{background:var(--das-bg);color:var(--das);border-color:var(--das)}
+.bar3 button:disabled{opacity:.35}
+.vq{font-size:clamp(26px,8vw,36px);font-weight:800;line-height:1.25}
+.vq small{display:block;font-size:16px;font-weight:500;color:var(--muted);margin-top:6px}
+.vt{margin:12px auto 0;border-collapse:collapse;font-size:16px}
+.vt td{padding:2px 8px}.vt td:first-child{color:var(--muted);text-align:right}
+.v{color:#9333ea;font-weight:700}
+/* estadísticas */
+.kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.kpi b{display:block;font-size:26px;letter-spacing:-.02em}
+.kpi span{font-size:12px;color:var(--muted)}
+.list{display:grid;gap:6px}
+.row{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 12px}
+.row .w{font-weight:700;flex:1;min-width:0}
+.row .w small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.badge{font-size:13px;font-weight:800;color:var(--ko);background:var(--die-bg);border-radius:99px;padding:3px 9px;white-space:nowrap}
+.meter{height:8px;background:var(--soft);border-radius:99px;overflow:hidden;margin-top:6px}
+.meter i{display:block;height:100%;background:var(--ko)}
+.empty{color:var(--muted);text-align:center;padding:16px}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--accent);color:var(--bg);padding:11px 16px;border-radius:12px;font-weight:600;font-size:15px;opacity:0;transition:.25s;z-index:99;pointer-events:none;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.warn{background:#fff8eb;border:1px solid #f3d9a8;border-radius:12px;padding:12px 14px;font-size:15px;margin-top:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><span class="flag"><i></i><i></i><i></i></span>Mein Deutsch</div>
+  <button class="sync" id="sync">…</button>
+</header>
+
+<!-- INICIO DE SESIÓN -->
+<section id="v-login" class="view pad">
+  <h2>Conecta tu OneDrive</h2>
+  <p class="sub">La app lee tus palabras de <b>palabras.txt</b> en tu OneDrive y guarda allí tus fallos, igual que la web del PC. Solo hay que hacerlo una vez.</p>
+  <button class="btn primary block" id="login-btn">Entrar con Microsoft</button>
+  <div class="warn hide" id="login-msg"></div>
+</section>
+
+<!-- REPASO -->
+<section id="v-repaso" class="view">
+  <div id="r-start" class="pad">
+    <h2>Repaso</h2>
+    <div class="card">
+      <div class="big-n" id="r-n">0</div><div class="sub" style="margin:2px 0 0">palabras y frases</div>
+      <label class="f">Qué repasar</label><div class="chips" id="r-filter"></div>
+      <label class="f">Dirección</label>
+      <div class="chips" id="r-dir"><button class="chip" data-d="de">Alemán → Español</button><button class="chip" data-d="es">Español → Alemán</button></div>
+      <label class="toggle"><input type="checkbox" id="r-auto"> Leer la palabra en voz alta</label>
+    </div>
+    <button class="btn primary block" id="r-go">Empezar</button>
+  </div>
+  <div id="r-run" class="run hide">
+    <div class="meta"><span id="r-pos"></span><button class="link" id="r-stop">Terminar</button></div>
+    <div class="prog"><i id="r-bar"></i></div>
+    <div class="card flash" id="r-card">
+      <span class="tag" id="r-tag"></span><button class="speak" id="r-say">🔊</button>
+      <div id="r-front"></div><div class="answer hide" id="r-back"></div>
+      <div class="tap" id="r-tap">Toca para ver la respuesta</div>
+    </div>
+    <div class="bar2 hide" id="r-rate"><button class="btn ko" id="r-ko">✗ No la sabía</button><button class="btn ok" id="r-ok">✓ La sabía</button></div>
+  </div>
+</section>
+
+<!-- ARTÍCULOS -->
+<section id="v-art" class="view">
+  <div id="a-start" class="pad">
+    <h2>Artículos</h2>
+    <p class="sub">¿der, die o das? Si aciertas, pasa sola a la siguiente.</p>
+    <div class="card">
+      <div class="big-n" id="a-n">0</div><div class="sub" style="margin:2px 0 0">sustantivos</div>
+      <label class="f">Qué practicar</label><div class="chips" id="a-filter"></div>
+      <label class="toggle"><input type="checkbox" id="a-showes"> Mostrar la traducción</label>
+    </div>
+    <button class="btn primary block" id="a-go">Empezar</button>
+  </div>
+  <div id="a-run" class="run hide">
+    <div class="meta"><span id="a-pos"></span><button class="link" id="a-stop">Terminar</button></div>
+    <div class="prog"><i id="a-bar"></i></div>
+    <div class="card flash" id="a-card">
+      <span class="tag" id="a-tag"></span>
+      <div class="word" id="a-word"></div><div class="extra" id="a-es"></div>
+      <div class="answer hide" id="a-back"></div>
+      <div class="tap hide" id="a-tap">Toca para seguir</div>
+    </div>
+    <div class="bar3" id="a-btns"><button data-a="der">der</button><button data-a="die">die</button><button data-a="das">das</button></div>
+  </div>
+</section>
+
+<!-- VERBOS -->
+<section id="v-verb" class="view">
+  <div id="b-start" class="pad">
+    <h2>Verbos</h2>
+    <p class="sub">Sale un pronombre y un verbo: di la forma en voz alta, toca para comprobar y marca si la sabías. Rondas de 20.</p>
+    <div class="card">
+      <label class="f" style="margin-top:0">Qué verbos</label><div class="chips" id="b-filter"></div>
+    </div>
+    <button class="btn primary block" id="b-go">Empezar</button>
+  </div>
+  <div id="b-run" class="run hide">
+    <div class="meta"><span id="b-pos"></span><button class="link" id="b-stop">Terminar</button></div>
+    <div class="prog"><i id="b-bar"></i></div>
+    <div class="card flash" id="b-card">
+      <button class="speak" id="b-say">🔊</button>
+      <div class="vq" id="b-q"></div><div class="answer hide" id="b-back"></div>
+      <div class="tap" id="b-tap">Toca para ver la respuesta</div>
+    </div>
+    <div class="bar2 hide" id="b-rate"><button class="btn ko" id="b-ko">✗ No la sabía</button><button class="btn ok" id="b-ok">✓ La sabía</button></div>
+  </div>
+</section>
+
+<!-- FIN DE UN EJERCICIO -->
+<section id="v-end" class="view pad">
+  <h2>¡Terminado! 🎉</h2>
+  <p class="sub" id="e-sub"></p>
+  <div class="list" id="e-list"></div>
+  <button class="btn primary block" id="e-again">Otra vez</button>
+  <button class="btn block" id="e-miss">Solo las falladas</button>
+  <button class="btn block" id="e-back">Volver</button>
+</section>
+
+<!-- ESTADÍSTICAS -->
+<section id="v-stats" class="view pad">
+  <h2>Dónde fallas</h2>
+  <div class="kpis" id="s-kpis"></div>
+  <button class="btn primary block" id="s-hard">Repasar las difíciles</button>
+  <h3>Palabras que más fallas</h3><div class="list" id="s-words"></div>
+  <h3>Por tema</h3><div class="list" id="s-tags"></div>
+  <h3>Verbos que más fallas</h3><div class="list" id="s-verbs"></div>
+  <h3>Últimas sesiones</h3><div class="list" id="s-sess"></div>
+</section>
+
+<nav class="tabs" id="tabs">
+  <button data-v="repaso" class="on"><b>🔁</b>Repaso</button>
+  <button data-v="art"><b>🎨</b>Artículos</button>
+  <button data-v="verb"><b>🔤</b>Verbos</button>
+  <button data-v="stats"><b>📊</b>Fallos</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== Código común copiado de la web del PC (index.html) por construir.js ===== */
+const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clean = x => String(x||'').replace(/\s*=\s*/g, ': ');
+function parseDe(str){
+  let s = String(str||'').trim(), art = '';
+  // Solo es artículo si detrás viene UN sustantivo y, como mucho, su plural o formas:
+  // «der Tisch, -e», «das Stadion, Stadien», «die Schweiz (aus der Schweiz)».
+  // Frases como «Das Auto ist neu.» o «Die Rechnung, bitte!» se quedan enteras.
+  const m = s.match(/^([Dd](?:er|ie|as))\s+(\p{Lu}[^\s,(]*)(.*)$/u);
+  if (m){
+    const rest = m[3].trim();
+    if (!rest || rest.startsWith('(') || /^,\s*([-¨]|\p{Lu}[^\s,]*(\s*[(/]|$))/u.test(rest)){ art = m[1].toLowerCase(); s = m[2] + m[3]; }
+  }
+  let extra = '';
+  const i = (art || /, [-¨]/.test(s)) ? s.indexOf(', ') : -1, j = s.indexOf(' (');
+  const cuts = [i,j].filter(k => k > 0);
+  if (cuts.length){ const k = Math.min(...cuts); extra = s.slice(k).replace(/^,\s*/,'').trim(); s = s.slice(0,k).trim(); }
+  return {art, de:s, extra};
+}
+function lineOf(w){
+  w = Object.assign({}, w, {de:clean(w.de), extra:clean(w.extra), es:clean(w.es), ex:clean(w.ex)});
+  let de = (w.art ? w.art + ' ' : '') + w.de;
+  if (w.extra) de += (w.extra.startsWith('(') ? ' ' : ', ') + w.extra;
+  let s = de + ' = ' + w.es;
+  if (w.ex) s += ' = ' + w.ex;
+  if (w.ko) s += ' [x' + w.ko + ']';
+  return s;
+}
+function toTxt(){
+  const out = [
+    '# Mein Deutsch · tus palabras',
+    '# Formato de cada línea:  alemán = español = ejemplo (el ejemplo es opcional)',
+    '# Los temas van entre corchetes, por ejemplo: [Tema 3]',
+    '# [x2] al final = veces que la has fallado (se actualiza sola)',
+    ''];
+  const groups = new Map();
+  db.words.forEach(w => { const t = w.tag || 'Mis palabras'; if (!groups.has(t)) groups.set(t, []); groups.get(t).push(w); });
+  for (const [t, ws] of groups){ out.push('[' + t + ']'); ws.forEach(w => out.push(lineOf(w))); out.push(''); }
+  return out.join('\r\n');
+}
+function fromTxt(txt, defTag){
+  const words = []; let tag = defTag || 'Mis palabras';
+  String(txt).replace(/^﻿/, '').split(/\r?\n/).forEach(raw => {
+    const line = raw.trim();
+    if (!line || line.startsWith('#')) return;
+    const h = line.match(/^\[(.+)\]$/);
+    if (h && !line.includes('=')) { tag = h[1].trim(); return; }
+    let ko = 0;
+    const l = line.replace(/\s*\[x(\d+)\]\s*$/, (_, n) => { ko = +n; return ''; });
+    let parts = l.split(/\s+=\s+/);
+    if (parts.length < 2) parts = l.split(/\s*=\s*/);
+    if (parts.length < 2 || !parts[0] || !parts[1]) return;
+    const p = parseDe(parts[0]);
+    words.push({id:newId(), art:p.art, de:p.de, extra:p.extra, es:parts[1], ex:parts.slice(2).join(' = '), tag, ko});
+  });
+  return words;
+}
+function wordHTML(w){
+  const a = w.art ? `<span class="a c-${w.art}">${w.art}</span>` : '';
+  return `${a}<span class="${w.art ? 'c-'+w.art : ''}">${esc(w.de)}</span>`;
+}
+const fmtExtra = x => x === '-' ? 'plural: igual que el singular (-)' : /^[-¨]/.test(x) ? 'plural: ' + x : x;
+const sayText = w => (w.art ? w.art + ' ' : '') + w.de.replace(/…/g, '');
+function umlaut(s){
+  const i = Math.max(s.lastIndexOf('a'), s.lastIndexOf('o'), s.lastIndexOf('u'), s.lastIndexOf('A'), s.lastIndexOf('O'), s.lastIndexOf('U'));
+  if (i < 0) return s;
+  if (/[uU]/.test(s[i]) && /[aA]/.test(s[i-1] || '')) return s.slice(0, i-1) + (s[i-1] === 'A' ? 'Ä' : 'ä') + s.slice(i);
+  return s.slice(0, i) + ({a:'ä',o:'ö',u:'ü',A:'Ä',O:'Ö',U:'Ü'})[s[i]] + s.slice(i+1);
+}
+function applyPl(de, n){
+  n = (n || '').trim();
+  const par = n.match(/\(([^)]*)\)/);
+  if (par && /^\p{Lu}[\p{L}-]*$/u.test(par[1].trim())) return par[1].trim();
+  n = n.replace(/\([^)]*\)/g, '').trim();
+  if (!n) return '';
+  if (n === '-') return de;
+  const m = n.match(/^-(¨?)(\p{Ll}*)$/u);
+  if (m) return (m[1] ? umlaut(de) : de) + m[2];
+  if (/^\p{Lu}[\p{L}-]*$/u.test(n)) return n;
+  return '';
+}
+function nounForms(w){
+  if (!w.art) return null;
+  const [p1, p2] = String(w.extra || '').split(/\s+\/\s+/);
+  const r = {sg: w.art + ' ' + w.de, pl: '', fem: '', femPl: '', note: ''};
+  const plPart = (p1 || '').trim();
+  const notes = [...plPart.matchAll(/\(([^)]*)\)/g)].map(m => m[1].trim());
+  if (/sin plural/i.test(plPart)) r.pl = 'no tiene';
+  else if (/solo plural/i.test(plPart)) r.pl = 'solo existe en plural';
+  else { const pl = applyPl(w.de, plPart); if (pl) r.pl = 'die ' + pl; }
+  r.note = notes.filter(t => !/^\p{Lu}[\p{L}-]*$/u.test(t) && !/^(sin|solo) plural$/i.test(t)).join(' · ');
+  if (p2){
+    const m = p2.trim().match(/^(der|die|das)\s+(\p{Lu}[^\s,(]*)\s*(.*)$/u);
+    if (m){
+      r.femArt = m[1]; r.fem = m[1] + ' ' + m[2];
+      const fp = applyPl(m[2], m[3].replace(/^,\s*/, '')) || (/in$/.test(m[2]) ? m[2] + 'nen' : '');
+      if (fp) r.femPl = 'die ' + fp;
+    } else r.note = [r.note, p2.trim()].filter(Boolean).join(' · ');
+  }
+  return r;
+}
+const artSpan = s => s.replace(/^(der|die|das) /, (_, a) => `<b class="c-${a}">${a}</b> `);
+function pairHTML(w){
+  const f = nounForms(w);
+  if (!f || !f.fem) return wordHTML(w);
+  const [a, ...rest] = f.fem.split(' ');
+  return `${wordHTML(w)}<span class="sep"> / </span><span class="a c-${a}">${a}</span><span class="c-${a}">${esc(rest.join(' '))}</span>`;
+}
+const sayAll = w => { const f = nounForms(w); return sayText(w) + (f && f.fem ? ', ' + f.fem : ''); };
+function formsHTML(w){
+  const f = nounForms(w);
+  if (!f) return w.extra ? `<div class="extra">${esc(fmtExtra(w.extra))}</div>` : '';
+  const rows = [];
+  const pls = [...new Set([f.pl, f.femPl].filter(Boolean))];
+  if (pls.length) rows.push(`<span><i>plural</i> ${pls.map(p => /^die /.test(p) ? artSpan(esc(p)) : esc(p)).join(' · ')}</span>`);
+  if (f.note) rows.push(`<span><i>nota</i> ${esc(f.note)}</span>`);
+  return rows.length ? `<div class="forms">${rows.join('')}</div>` : '';
+}
+function formsText(w){
+  const f = nounForms(w);
+  if (!f) return w.extra || '';
+  return [f.pl && 'plural: ' + [...new Set([f.pl, f.femPl].filter(Boolean))].join(' / '), f.note].filter(Boolean).join(' · ');
+}
+const ART_RULES = [
+  [/(chen|lein)$/, 'das', '-chen / -lein → siempre das', true],
+  [/(ung|heit|keit|schaft)$/, 'die', '-ung, -heit, -keit, -schaft → siempre die', true],
+  [/(ion|tät|ik|ei|ie)$/, 'die', '-ion, -tät, -ik, -ei, -ie → die', true],
+  [/(um|ment)$/, 'das', '-um / -ment → das', true],
+  [/(ling|ismus)$/, 'der', '-ling / -ismus → der', true],
+  [/(tag|woch)$/, 'der', 'Los días de la semana → der', true],
+  [/in$/, 'die', 'Mujer en -in → die', false],
+  [/e$/, 'die', 'Acaba en -e → die (pasa en el 90 % de los casos)', true],
+  [/(er|or)$/, 'der', '-er / -or (personas y aparatos) → suele ser der', false],
+  [/^ge/, 'das', 'Ge- + palabra → suele ser das', false],
+];
+function artHint(w){
+  const d = w.de.toLowerCase();
+  const info = w.es + ' ' + w.extra;
+  if (/plural/i.test(info) && !/casi/i.test(info) && w.art === 'die') return '💡 Siempre en plural → die';
+  const comp = db.words.find(o => o !== w && o.art && o.de.length >= 3 && d.length > o.de.length && d.endsWith(o.de.toLowerCase()) && o.art === w.art);
+  if (comp) return `💡 Palabra compuesta: manda la última → <span class="c-${comp.art}"><b>${comp.art}</b> ${esc(comp.de)}</span>`;
+  const r = ART_RULES.find(([re]) => re.test(d));
+  if (!r) return '';
+  if (r[1] === w.art) return '💡 ' + r[2];
+  if (w.art === 'der' && /e$/.test(d)) return '⚠️ Excepción a «-e → die»: hay un grupo de masculinos en -e, casi todos personas o animales (der Name, der Kollege, der Junge…).';
+  return r[3] ? `⚠️ Excepción a la regla «${r[2]}»: apréndela de memoria.` : '';
+}
+function shuffle(a){ for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const VERBS = [
+  {inf:'sein', es:'ser, estar', f:['bin','bist','ist','sind','seid','sind'], t:'irregular'},
+  {inf:'haben', es:'tener', f:['habe','hast','hat','haben','habt','haben'], t:'irregular'},
+  {inf:'heißen', es:'llamarse'}, {inf:'kommen', es:'venir, ser de'}, {inf:'wohnen', es:'vivir'},
+  {inf:'sprechen', es:'hablar', v:'sprich', t:'e → i'}, {inf:'lesen', es:'leer', v:'lies', t:'e → ie'},
+  {inf:'sehen', es:'ver', v:'sieh', t:'e → ie'}, {inf:'fahren', es:'conducir, ir en vehículo', v:'fähr', t:'a → ä'},
+  {inf:'raten', es:'adivinar', f:['rate','rätst','rät','raten','ratet','raten'], t:'a → ä'},
+  {inf:'arbeiten', es:'trabajar'}, {inf:'warten', es:'esperar'},
+  {inf:'lernen', es:'aprender'}, {inf:'machen', es:'hacer'}, {inf:'fragen', es:'preguntar'}, {inf:'sagen', es:'decir'},
+  {inf:'hören', es:'escuchar, oír'}, {inf:'spielen', es:'jugar'}, {inf:'kochen', es:'cocinar'}, {inf:'schwimmen', es:'nadar'},
+  {inf:'singen', es:'cantar'}, {inf:'suchen', es:'buscar'}, {inf:'gehen', es:'ir (a pie)'}, {inf:'joggen', es:'correr'},
+  {inf:'schreiben', es:'escribir'}, {inf:'notieren', es:'anotar'}, {inf:'fotografieren', es:'hacer fotos'},
+  {inf:'buchstabieren', es:'deletrear'}, {inf:'reisen', es:'viajar'}, {inf:'tanzen', es:'bailar'},
+  {inf:'grüßen', es:'saludar'}, {inf:'passen', es:'encajar, quedar bien'}, {inf:'ergänzen', es:'completar'},
+  {inf:'werden', es:'llegar a ser; cumplir (años)', f:['werde','wirst','wird','werden','werdet','werden'], t:'irregular'},
+  {inf:'kosten', es:'costar'}, {inf:'feiern', es:'celebrar', t:'-ern: wir feiern'},
+  {inf:'würfeln', es:'tirar el dado', f:['würfle','würfelst','würfelt','würfeln','würfelt','würfeln'], t:'-eln: ich würfle'},
+  {inf:'sammeln', es:'recoger, reunir', f:['sammle','sammelst','sammelt','sammeln','sammelt','sammeln'], t:'-eln: ich sammle'},
+];
+const PERS = ['ich','du','er/sie/es','wir','ihr','sie/Sie'], PSAY = ['ich','du','er','wir','ihr','sie'];
+const PRON = [['ich','yo',0],['du','tú',1],['er','él',2],['sie','ella',2],['wir','nosotros',3],['ihr','vosotros',4],['sie','ellos',5],['Sie','usted',5]];
+const vStem = v => /[lr]n$/.test(v.inf) && /e[lr]n$/.test(v.inf) ? v.inf.slice(0, -1) : v.inf.replace(/en$/, '');
+const naive = v => { const s = vStem(v); return [s+'e', s+'st', s+'t', v.inf, s+'t', v.inf]; };
+function conj(v){
+  if (v.f) return v.f;
+  const st = vStem(v), vs = v.v || st, tE = /[td]$/.test(st) && !v.v, sz = /[sßzx]$/.test(st);
+  return [st+'e', vs + (sz ? 't' : tE ? 'est' : 'st'), vs + (tE ? 'et' : 't'), v.inf, st + (/[td]$/.test(st) ? 'et' : 't'), v.inf];
+}
+function vTag(v){
+  if (v.t) return v.t;
+  const st = vStem(v);
+  return /[td]$/.test(st) ? 'raíz en -t/-d' : /[sßzx]$/.test(st) ? 'raíz en -s/-ß/-z' : '';
+}
+/* ===== Fin del código común ===== */
+
+const CONFIG = {clientId: 'PENDIENTE', words: '/Escritorio/Aleman/palabras.txt', prog: '/Escritorio/Aleman/progreso.json'};
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const DEMO = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).has('demo');
+const LS = {
+  get(k, d){ try { const v = localStorage.getItem('md.' + k); return v == null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem('md.' + k, JSON.stringify(v)); } catch(e){} },
+};
+let db = {words: []}, nextId = 1;
+const newId = () => 'w' + (nextId++);
+let settings = Object.assign({dir:'de', auto:true, filter:'__all', afilter:'__all', ashowes:true, bfilter:'__all'}, LS.get('settings', {}));
+const saveSettings = () => LS.set('settings', settings);
+const kOf = w => ((w.art || '') + '|' + w.de).toLowerCase();
+const tags = () => [...new Set(db.words.map(w => w.tag).filter(Boolean))];
+function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.remove('on'), Math.max(2200, t.length * 55)); }
+function withDb(tmp, fn){ const old = db; db = tmp; try { return fn(); } finally { db = old; } }
+
+/* ---------- voz ---------- */
+let deVoice = null;
+function pickVoice(){
+  if (!('speechSynthesis' in window)) return;
+  const sc = v => (/natural/i.test(v.name) ? 0 : /online/i.test(v.name) ? 1 : /google/i.test(v.name) ? 2 : 3) + (/^de[-_]DE/i.test(v.lang) ? 0 : .5);
+  deVoice = speechSynthesis.getVoices().filter(v => /^de([-_]|$)/i.test(v.lang)).sort((a, b) => sc(a) - sc(b))[0] || null;
+}
+if ('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function speak(text){
+  if (!('speechSynthesis' in window) || !text) return;
+  if (!deVoice) pickVoice();
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  if (deVoice) u.voice = deVoice;
+  u.lang = deVoice ? deVoice.lang : 'de-DE'; u.rate = .92;
+  speechSynthesis.speak(u);
+}
+
+/* ---------- pantalla encendida durante los ejercicios ---------- */
+let wake = null;
+async function keepAwake(on){
+  try {
+    if (on && 'wakeLock' in navigator && !wake){ wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => wake = null); }
+    if (!on && wake){ await wake.release(); wake = null; }
+  } catch(e){}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && document.body.classList.contains('running')) keepAwake(true); });
+
+/* ---------- inicio de sesión con Microsoft (OAuth con PKCE, sin librerías) ---------- */
+const AUTH = 'https://login.microsoftonline.com/common/oauth2/v2.0';
+const SCOPE = 'https://graph.microsoft.com/Files.ReadWrite offline_access';
+const REDIRECT = location.origin + location.pathname;
+let tok = LS.get('tok', null), authMsg = '';
+const saveTok = () => LS.set('tok', tok);
+const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+async function login(silent){
+  const v = b64u(crypto.getRandomValues(new Uint8Array(32)));
+  const ch = b64u(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v)));
+  const st = b64u(crypto.getRandomValues(new Uint8Array(12)));
+  sessionStorage.setItem('md.pkce', JSON.stringify({v, st}));
+  const q = new URLSearchParams({client_id: CONFIG.clientId, response_type: 'code', redirect_uri: REDIRECT, response_mode: 'query',
+    scope: SCOPE, code_challenge: ch, code_challenge_method: 'S256', state: st, prompt: silent ? 'none' : 'select_account'});
+  location.href = AUTH + '/authorize?' + q;
+}
+async function tokenReq(params){
+  const r = await fetch(AUTH + '/token', {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: new URLSearchParams(Object.assign({client_id: CONFIG.clientId, scope: SCOPE}, params))});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j.access_token){
+    if (params.grant_type === 'refresh_token'){ tok = null; saveTok(); }
+    throw new Error(j.error_description ? j.error_description.split('\n')[0] : 'No se pudo iniciar sesión');
+  }
+  tok = {access: j.access_token, exp: Date.now() + (j.expires_in - 120) * 1000, refresh: j.refresh_token || (tok && tok.refresh)};
+  saveTok(); LS.set('loggedOnce', true);
+  return tok.access;
+}
+async function handleRedirect(){
+  const q = new URLSearchParams(location.search);
+  if (!q.has('code') && !q.has('error')) return;
+  history.replaceState(null, '', REDIRECT);
+  const p = JSON.parse(sessionStorage.getItem('md.pkce') || 'null'); sessionStorage.removeItem('md.pkce');
+  if (q.has('error')){
+    const e = q.get('error');
+    authMsg = /login_required|interaction_required|consent_required/.test(e) ? '' : (q.get('error_description') || e);
+    return;
+  }
+  if (!p || p.st !== q.get('state')) { authMsg = 'La respuesta del inicio de sesión no es válida. Inténtalo otra vez.'; return; }
+  try { await tokenReq({grant_type: 'authorization_code', code: q.get('code'), redirect_uri: REDIRECT, code_verifier: p.v}); }
+  catch(e){ authMsg = e.message; }
+}
+async function getToken(){
+  if (DEMO) return 'demo';
+  if (tok && tok.access && Date.now() < tok.exp) return tok.access;
+  if (tok && tok.refresh && navigator.onLine){ try { return await tokenReq({grant_type: 'refresh_token', refresh_token: tok.refresh}); } catch(e){} }
+  return null;
+}
+
+/* ---------- OneDrive (Microsoft Graph) ---------- */
+const gUrl = p => 'https://graph.microsoft.com/v1.0/me/drive/root:' + p.split('/').map(encodeURIComponent).join('/');
+async function gFetch(url, opt = {}, retry = true){
+  const t = await getToken(); if (!t) throw new Error('login');
+  const r = await fetch(url, Object.assign({}, opt, {headers: Object.assign({Authorization: 'Bearer ' + t}, opt.headers || {})}));
+  if (r.status === 401 && retry){ if (tok) { tok.access = null; saveTok(); } return gFetch(url, opt, false); }
+  return r;
+}
+async function gGet(p){
+  if (DEMO) return demoGet(p);
+  const r = await gFetch(gUrl(p));
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error('OneDrive respondió ' + r.status);
+  const m = await r.json();
+  const c = await fetch(m['@microsoft.graph.downloadUrl'], {cache: 'no-store'});
+  if (!c.ok) throw new Error('No se pudo descargar ' + p.split('/').pop());
+  return {txt: await c.text(), etag: m.eTag};
+}
+async function gPut(p, body, etag){
+  if (DEMO) return demoPut(p, body, etag);
+  const h = {'Content-Type': p.endsWith('.json') ? 'application/json' : 'text/plain; charset=utf-8'};
+  if (etag) h['If-Match'] = etag;
+  const r = await gFetch(gUrl(p) + ':/content', {method: 'PUT', headers: h, body});
+  if (r.status === 412 || r.status === 409) return 'conflict';
+  if (!r.ok) throw new Error('OneDrive respondió ' + r.status + ' al guardar');
+  return (await r.json()).eTag;
+}
+// Modo demo (solo en el PC, con ?demo): «OneDrive» simulado en localStorage, empezando por ../palabras.txt
+async function demoGet(p){
+  const s = LS.get('demo:' + p, null);
+  if (s) return s;
+  if (p.endsWith('palabras.txt')){ const txt = await fetch('../palabras.txt', {cache: 'no-store'}).then(r => r.text()); const f = {txt, etag: 'd1'}; LS.set('demo:' + p, f); return f; }
+  return null;
+}
+async function demoPut(p, body, etag){
+  const s = LS.get('demo:' + p, null);
+  if (s && etag !== s.etag) return 'conflict';
+  const f = {txt: body, etag: 'd' + Date.now()}; LS.set('demo:' + p, f); return f.etag;
+}
+
+/* ---------- datos locales y cambios pendientes de subir ---------- */
+// deltas: cuánto ha cambiado el contador de fallos [xN] de cada palabra desde la última sincronización
+let deltas = LS.get('deltas', {});
+// progreso pendiente: sesiones y fallos de verbos que aún no se han subido a progreso.json
+let progPend = LS.get('progPend', {sessions: [], verbs: {}});
+let prog = LS.get('prog', {sessions: [], verbs: {}});
+const pendingCount = () => Object.keys(deltas).length + progPend.sessions.length;
+function loadTxt(txt){ nextId = 1; db.words = fromTxt(txt); db.words.forEach(w => { const d = deltas[kOf(w)]; if (d) w.ko = Math.max(0, (w.ko || 0) + d); }); }
+function saveLocal(){ LS.set('txt', withDb(db, toTxt)); }
+function bump(w, d){
+  const k = kOf(w), before = w.ko || 0;
+  w.ko = Math.max(0, before + d);
+  const real = w.ko - before; if (!real) return;
+  deltas[k] = (deltas[k] || 0) + real; if (!deltas[k]) delete deltas[k];
+  LS.set('deltas', deltas); saveLocal(); renderSync(); scheduleSync();
+}
+function logSession(mode, n, first){
+  if (!n) return;
+  progPend.sessions.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), t: new Date().toISOString(), mode, n, first, dev: 'móvil'});
+  LS.set('progPend', progPend); renderSync(); scheduleSync(800);
+}
+function verbStat(key, failed){
+  const v = progPend.verbs[key] || [0, 0]; v[0]++; if (failed) v[1]++;
+  progPend.verbs[key] = v; LS.set('progPend', progPend);
+}
+
+/* ---------- sincronización ---------- */
+let syncing = false, syncErr = '', syncTimer = null, lastSync = LS.get('lastSync', 0);
+const busy = () => document.body.classList.contains('running');
+function scheduleSync(ms = 4000){ clearTimeout(syncTimer); syncTimer = setTimeout(syncAll, ms); }
+async function syncAll(){
+  if (syncing) return;
+  if (!navigator.onLine){ renderSync(); return; }
+  if (!(await getToken())){ renderSync(); return; }
+  syncing = true; syncErr = ''; renderSync();
+  try { await syncWords(); await syncProg(); lastSync = Date.now(); LS.set('lastSync', lastSync); }
+  catch(e){ syncErr = e.message === 'login' ? '' : e.message; }
+  syncing = false; renderSync();
+}
+async function syncWords(){
+  for (let i = 0; i < 4; i++){
+    const f = await gGet(CONFIG.words);
+    if (!f) throw new Error('No encuentro ' + CONFIG.words + ' en tu OneDrive');
+    const applied = Object.assign({}, deltas);
+    let txt = f.txt;
+    if (Object.keys(applied).length){
+      const tmp = {words: fromTxt(f.txt)};
+      tmp.words.forEach(w => { const d = applied[kOf(w)]; if (d) w.ko = Math.max(0, (w.ko || 0) + d); });
+      txt = withDb(tmp, toTxt);
+      if (await gPut(CONFIG.words, txt, f.etag) === 'conflict') continue;   // alguien lo cambió a la vez: se repite
+    }
+    for (const k in applied){ deltas[k] = (deltas[k] || 0) - applied[k]; if (!deltas[k]) delete deltas[k]; }
+    LS.set('deltas', deltas);
+    if (busy()) { LS.set('txt', txt); needReload = true; }        // no cambia las palabras en mitad de un ejercicio
+    else { loadTxt(txt); saveLocal(); refreshStarts(); }
+    return;
+  }
+  throw new Error('palabras.txt está cambiando ahora mismo; lo intento luego');
+}
+let needReload = false;
+async function syncProg(){
+  for (let i = 0; i < 4; i++){
+    const f = await gGet(CONFIG.prog);
+    let p = {sessions: [], verbs: {}};
+    if (f){ try { p = Object.assign(p, JSON.parse(f.txt)); } catch(e){} }
+    const snap = JSON.parse(JSON.stringify(progPend));
+    if (snap.sessions.length || Object.keys(snap.verbs).length){
+      const ids = new Set(p.sessions.map(s => s.id));
+      p.sessions.push(...snap.sessions.filter(s => !ids.has(s.id)));
+      p.sessions = p.sessions.slice(-500);
+      for (const k in snap.verbs){ const a = p.verbs[k] || [0, 0]; p.verbs[k] = [a[0] + snap.verbs[k][0], a[1] + snap.verbs[k][1]]; }
+      if (await gPut(CONFIG.prog, JSON.stringify(p), f ? f.etag : null) === 'conflict') continue;
+      const done = new Set(snap.sessions.map(s => s.id));
+      progPend.sessions = progPend.sessions.filter(s => !done.has(s.id));
+      for (const k in snap.verbs){
+        const a = progPend.verbs[k]; if (!a) continue;
+        a[0] -= snap.verbs[k][0]; a[1] -= snap.verbs[k][1]; if (a[0] <= 0) delete progPend.verbs[k];
+      }
+      LS.set('progPend', progPend);
+    }
+    prog = p; LS.set('prog', prog);
+    if ($('#v-stats').classList.contains('on')) renderStats();
+    return;
+  }
+  throw new Error('progreso.json está cambiando ahora mismo; lo intento luego');
+}
+function renderSync(){
+  const b = $('#sync'), n = pendingCount();
+  let t, warn = false;
+  if (DEMO) t = '🧪 Demo' + (n ? ` · ${n} por subir` : ' · sincronizado');
+  else if (!tok && !LS.get('loggedOnce', false)) { t = '🔑 Conectar OneDrive'; warn = true; }
+  else if (!tok) { t = '🔑 Vuelve a entrar' + (n ? ` · ${n} por subir` : ''); warn = true; }
+  else if (syncing) t = '⏳ Sincronizando…';
+  else if (!navigator.onLine) { t = '📴 Sin conexión' + (n ? ` · ${n} por subir` : ''); warn = !!n; }
+  else if (syncErr) { t = '⚠️ ' + syncErr; warn = true; }
+  else if (n) t = `⏳ ${n} por subir`;
+  else t = '✓ Sincronizado' + (lastSync ? ' ' + hace(lastSync) : '');
+  b.textContent = t; b.classList.toggle('warn', warn);
+}
+const hace = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'ahora' : m < 60 ? `hace ${m} min` : m < 1440 ? `hace ${Math.round(m / 60)} h` : `hace ${Math.round(m / 1440)} d`; };
+$('#sync').onclick = () => { if (!DEMO && !tok) return login(false); syncAll(); };
+window.addEventListener('online', () => syncAll());
+window.addEventListener('offline', renderSync);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !busy()) syncAll(); });
+setInterval(renderSync, 60000);
+
+/* ---------- navegación ---------- */
+const VIEWS = ['login', 'repaso', 'art', 'verb', 'stats', 'end'];
+function showView(v){
+  VIEWS.forEach(k => $('#v-' + k).classList.toggle('on', k === v));
+  $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  if (v === 'stats') renderStats();
+  window.scrollTo(0, 0);
+}
+$$('#tabs button').forEach(b => b.onclick = () => { showView(b.dataset.v); refreshStarts(); });
+function setRunning(on){
+  document.body.classList.toggle('running', on); keepAwake(on);
+  if (!on && needReload){ needReload = false; loadTxt(LS.get('txt', '')); refreshStarts(); }
+  if (!on) scheduleSync(500);
+}
+function chips(el, opts, cur, onPick){
+  el.innerHTML = opts.map(([v, l]) => `<button class="chip ${v === cur ? 'on' : ''}" data-f="${esc(v)}">${esc(l)}</button>`).join('');
+  el.querySelectorAll('.chip').forEach(b => b.onclick = () => onPick(b.dataset.f));
+}
+function refreshStarts(){ renderRStart(); renderAStart(); renderBStart(); }
+
+/* ---------- motor de rondas (común a los tres ejercicios) ---------- */
+// Las que fallas vuelven a salir, mezcladas, al terminar la ronda, hasta acertarlas todas.
+function newRun(mode, ids){ return {mode, round: 1, queue: shuffle(ids.slice()), size: ids.length, total: ids.length, failed: [], ever: new Set(), seen: new Set(), shown: false}; }
+function runNext(run){
+  if (!run.queue.length){
+    if (!run.failed.length) return false;
+    run.round++; run.queue = shuffle(run.failed.slice()); run.size = run.queue.length; run.failed = [];
+    toast(`Ronda ${run.round}: vuelven las ${run.size} que has fallado`);
+  }
+  return true;
+}
+function runPos(run, el, bar){
+  const n = run.size - run.queue.length + 1;
+  $(el).textContent = (run.round > 1 ? `Ronda ${run.round} · ` : '') + `${n} de ${run.size}` + (run.failed.length ? ` · ${run.failed.length} falladas` : '');
+  $(bar).style.width = ((n - 1) / run.size * 100) + '%';
+}
+let END = null;   // qué hacer en la pantalla final
+function finish(run, label, missHTML, again, againMiss){
+  setRunning(false);
+  logSession(run.mode, run.seen.size, run.seen.size - [...run.ever].filter(x => run.seen.has(x)).length);
+  const miss = [...run.ever];
+  $('#e-sub').textContent = `${run.seen.size} ${label} · ${run.seen.size - miss.length} a la primera · ${miss.length} con algún fallo`;
+  $('#e-list').innerHTML = miss.length ? '<h3 style="margin-top:6px">Las que te han costado</h3>' + miss.map(missHTML).join('') : '<p class="sub">¡Todo a la primera! 💪</p>';
+  $('#e-miss').classList.toggle('hide', !miss.length);
+  END = {again, againMiss: () => againMiss(miss), back: run.mode};
+  showView('end');
+}
+$('#e-again').onclick = () => END.again();
+$('#e-miss').onclick = () => END.againMiss();
+$('#e-back').onclick = () => { showView(END.back === 'repaso' ? 'repaso' : END.back === 'articulos' ? 'art' : 'verb'); refreshStarts(); };
+const byId = id => db.words.find(w => w.id === id);
+const missWord = id => { const w = byId(id); return w ? `<div class="row"><div class="w">${pairHTML(w)}<small>${esc(w.es)}</small></div>${w.ko ? `<span class="badge">×${w.ko}</span>` : ''}</div>` : ''; };
+
+/* ---------- REPASO ---------- */
+let R = null;
+function rPool(){
+  const f = settings.filter;
+  if (f === '__hard') return db.words.filter(w => (w.ko || 0) > 0);
+  return f === '__all' ? db.words : db.words.filter(w => w.tag === f);
+}
+function renderRStart(){
+  if (R) return;
+  const hard = db.words.filter(w => (w.ko || 0) > 0).length;
+  const opts = [['__all', 'Todas'], ...tags().map(t => [t, t]), ['__hard', `Difíciles (${hard})`]];
+  if (!opts.some(o => o[0] === settings.filter)) settings.filter = '__all';
+  chips($('#r-filter'), opts, settings.filter, v => { settings.filter = v; saveSettings(); renderRStart(); });
+  $$('#r-dir .chip').forEach(b => { b.classList.toggle('on', b.dataset.d === settings.dir); b.onclick = () => { settings.dir = b.dataset.d; saveSettings(); renderRStart(); }; });
+  $('#r-auto').checked = !!settings.auto; $('#r-auto').onchange = e => { settings.auto = e.target.checked; saveSettings(); };
+  $('#r-n').textContent = rPool().length;
+}
+function startR(list){
+  const ids = (list || rPool()).map(w => w.id);
+  if (!ids.length) return toast('No hay palabras en este grupo');
+  R = newRun('repaso', ids); showView('repaso');
+  $('#r-start').classList.add('hide'); $('#r-run').classList.remove('hide'); setRunning(true); rCard();
+}
+function rCard(){
+  while (R.queue.length && !byId(R.queue[0])) R.queue.shift();
+  if (!runNext(R)) return rEnd();
+  const w = byId(R.queue[0]); R.shown = false; runPos(R, '#r-pos', '#r-bar');
+  $('#r-tag').textContent = w.tag || '';
+  const deSide = `<div class="word">${pairHTML(w)}</div>${formsHTML(w)}`;
+  const esSide = `<div class="word" style="font-size:clamp(26px,8vw,38px)">${esc(w.es)}</div>`;
+  $('#r-front').innerHTML = settings.dir === 'de' ? deSide : esSide;
+  $('#r-back').innerHTML = (settings.dir === 'de' ? `<div class="es">${esc(w.es)}</div>` : deSide) + (w.ex ? `<div class="ex">“${esc(w.ex)}”</div>` : '');
+  $('#r-back').classList.add('hide'); $('#r-tap').classList.remove('hide'); $('#r-rate').classList.add('hide');
+  $('#r-say').classList.toggle('hide', settings.dir !== 'de');
+  if (settings.dir === 'de' && settings.auto) speak(sayAll(w));
+}
+function rReveal(){
+  if (!R || R.shown) return; R.shown = true;
+  const w = byId(R.queue[0]);
+  $('#r-back').classList.remove('hide'); $('#r-tap').classList.add('hide'); $('#r-rate').classList.remove('hide'); $('#r-say').classList.remove('hide');
+  if (settings.auto) speak(settings.dir === 'es' ? sayAll(w) : (w.ex || ''));
+}
+function rRate(ok){
+  if (!R || !R.shown) return;
+  const id = R.queue.shift(), w = byId(id); R.seen.add(id);
+  if (ok){ if (w && R.round === 1 && w.ko > 0) bump(w, -1); }
+  else { R.failed.push(id); if (w && !R.ever.has(id)) bump(w, +1); R.ever.add(id); }
+  rCard();
+}
+function rEnd(){
+  const run = R; R = null;
+  $('#r-run').classList.add('hide'); $('#r-start').classList.remove('hide');
+  finish(run, 'palabras', missWord, () => startR(), miss => startR(miss.map(byId).filter(Boolean)));
+}
+$('#r-go').onclick = () => startR();
+$('#r-card').onclick = e => { if (e.target.closest('#r-say')) return; rReveal(); };
+$('#r-say').onclick = () => R && speak(sayAll(byId(R.queue[0])));
+$('#r-ok').onclick = () => rRate(true); $('#r-ko').onclick = () => rRate(false);
+$('#r-stop').onclick = () => { if (R && R.seen.size) rEnd(); else { R = null; setRunning(false); $('#r-run').classList.add('hide'); $('#r-start').classList.remove('hide'); renderRStart(); } };
+
+/* ---------- ARTÍCULOS ---------- */
+let A = null, aTimer = null;
+const nouns = () => db.words.filter(w => w.art);
+function aPool(){
+  const n = nouns(), f = settings.afilter;
+  if (f === '__hard') return n.filter(w => (w.ko || 0) > 0);
+  return f === '__all' ? n : n.filter(w => w.tag === f);
+}
+function renderAStart(){
+  if (A) return;
+  const n = nouns(), hard = n.filter(w => (w.ko || 0) > 0).length;
+  const opts = [['__all', 'Todas'], ...[...new Set(n.map(w => w.tag))].map(t => [t, t]), ['__hard', `Difíciles (${hard})`]];
+  if (!opts.some(o => o[0] === settings.afilter)) settings.afilter = '__all';
+  chips($('#a-filter'), opts, settings.afilter, v => { settings.afilter = v; saveSettings(); renderAStart(); });
+  $('#a-showes').checked = settings.ashowes !== false; $('#a-showes').onchange = e => { settings.ashowes = e.target.checked; saveSettings(); };
+  $('#a-n').textContent = aPool().length;
+}
+function startA(list){
+  const ids = (list || aPool()).map(w => w.id);
+  if (!ids.length) return toast('No hay sustantivos en este grupo');
+  A = newRun('articulos', ids); showView('art');
+  $('#a-start').classList.add('hide'); $('#a-run').classList.remove('hide'); setRunning(true); aCard();
+}
+function aCard(){
+  clearTimeout(aTimer);
+  while (A.queue.length && !byId(A.queue[0])) A.queue.shift();
+  if (!runNext(A)) return aEnd();
+  const w = byId(A.queue[0]); A.shown = false; runPos(A, '#a-pos', '#a-bar');
+  $('#a-card').classList.remove('good', 'bad');
+  $('#a-tag').textContent = w.tag || '';
+  $('#a-word').textContent = w.de;
+  $('#a-es').textContent = settings.ashowes !== false ? w.es : '';
+  $('#a-back').classList.add('hide'); $('#a-tap').classList.add('hide');
+  $$('#a-btns button').forEach(b => b.disabled = false);
+}
+function aAnswer(a){
+  if (!A || A.shown) return; A.shown = true;
+  const id = A.queue[0], w = byId(id), ok = a === w.art, hint = artHint(w); A.seen.add(id);
+  $('#a-card').classList.add(ok ? 'good' : 'bad');
+  $$('#a-btns button').forEach(b => b.disabled = true);
+  $('#a-back').innerHTML = `<div class="res">${ok ? '✓' : '✗'} ${pairHTML(w)}</div>` + formsHTML(w)
+    + (ok ? '' : `<div class="rule">Has elegido <b class="c-${a}">${a}</b>.</div>`) + (hint ? `<div class="rule">${hint}</div>` : '');
+  $('#a-back').classList.remove('hide'); $('#a-tap').classList.remove('hide');
+  speak(sayText(w));
+  if (!ok){ A.failed.push(id); if (!A.ever.has(id)) bump(w, +1); A.ever.add(id); }
+  else aTimer = setTimeout(aNext, 1600);   // si aciertas, pasa sola
+}
+function aNext(){ if (!A || !A.shown) return; A.queue.shift(); aCard(); }
+function aEnd(){
+  clearTimeout(aTimer); const run = A; A = null;
+  $('#a-run').classList.add('hide'); $('#a-start').classList.remove('hide');
+  finish(run, 'sustantivos', id => { const w = byId(id); const h = w && artHint(w); return w ? `<div class="row"><div class="w">${pairHTML(w)}<small>${h || esc(w.es)}</small></div></div>` : ''; },
+    () => startA(), miss => startA(miss.map(byId).filter(Boolean)));
+}
+$('#a-go').onclick = () => startA();
+$$('#a-btns button').forEach(b => b.onclick = () => aAnswer(b.dataset.a));
+$('#a-card').onclick = () => aNext();
+$('#a-stop').onclick = () => { clearTimeout(aTimer); if (A && A.seen.size) aEnd(); else { A = null; setRunning(false); $('#a-run').classList.add('hide'); $('#a-start').classList.remove('hide'); renderAStart(); } };
+
+/* ---------- VERBOS (tarjetas: lo dices en voz alta, tocas y marcas) ---------- */
+let B = null;
+function bPool(){
+  const f = settings.bfilter;
+  if (f === '__irr') return VERBS.filter(v => v.v || v.f);
+  if (f === '__sh') return VERBS.filter(v => v.inf === 'sein' || v.inf === 'haben');
+  if (f === '__esp') return VERBS.filter(v => v.v || v.f || vTag(v));
+  if (f === '__hard'){ const hard = hardVerbs().map(x => x.key); return hard.length ? null : []; }
+  return VERBS;
+}
+function allProg(){
+  // progreso.json + lo pendiente de subir
+  const v = JSON.parse(JSON.stringify(prog.verbs || {}));
+  for (const k in progPend.verbs){ const a = v[k] || [0, 0]; v[k] = [a[0] + progPend.verbs[k][0], a[1] + progPend.verbs[k][1]]; }
+  return {sessions: [...(prog.sessions || []), ...progPend.sessions.filter(s => !(prog.sessions || []).some(x => x.id === s.id))], verbs: v};
+}
+function hardVerbs(){
+  const v = allProg().verbs;
+  return Object.entries(v).filter(([k, a]) => a[1] > 0 && VERBS.some(x => x.inf === k.split('|')[0]))
+    .map(([key, a]) => ({key, n: a[0], ko: a[1]})).sort((x, y) => y.ko - x.ko || y.ko / y.n - x.ko / x.n);
+}
+function renderBStart(){
+  if (B) return;
+  const nh = hardVerbs().length;
+  const opts = [['__all', 'Todos'], ['__esp', 'Los especiales'], ['__irr', 'Cambio de vocal e irregulares'], ['__sh', 'sein y haben'], ['__hard', `Los que fallo (${nh})`]];
+  chips($('#b-filter'), opts, settings.bfilter, v => { settings.bfilter = v; saveSettings(); renderBStart(); });
+}
+function startB(keys){
+  let ids = keys;
+  if (!ids){
+    if (settings.bfilter === '__hard') ids = hardVerbs().slice(0, 20).map(x => x.key);
+    else {
+      const pool = bPool(); ids = [];
+      for (let i = 0; i < 40 && ids.length < 20; i++){
+        const v = pool[Math.floor(Math.random() * pool.length)], p = Math.floor(Math.random() * PRON.length);
+        const k = v.inf + '|' + p; if (!ids.includes(k)) ids.push(k);
+      }
+    }
+  }
+  if (!ids.length) return toast('Todavía no has fallado ningún verbo 👍');
+  B = newRun('verbos', ids); showView('verb');
+  $('#b-start').classList.add('hide'); $('#b-run').classList.remove('hide'); setRunning(true); bCard();
+}
+const vOf = k => { const [inf, p] = k.split('|'); return {v: VERBS.find(x => x.inf === inf), p: PRON[+p]}; };
+function bCard(){
+  while (B.queue.length && !vOf(B.queue[0]).v) B.queue.shift();
+  if (!runNext(B)) return bEnd();
+  const {v, p} = vOf(B.queue[0]); B.shown = false; runPos(B, '#b-pos', '#b-bar');
+  $('#b-q').innerHTML = `<b>${esc(p[0])}</b> <span style="color:var(--muted);font-weight:500">(${esc(p[1])})</span><br>${esc(v.inf)}<small>${esc(v.es)}</small>`;
+  $('#b-back').classList.add('hide'); $('#b-tap').classList.remove('hide'); $('#b-rate').classList.add('hide');
+}
+function bReveal(){
+  if (!B || B.shown) return; B.shown = true;
+  const {v, p} = vOf(B.queue[0]), forms = conj(v), nf = naive(v), right = forms[p[2]];
+  $('#b-back').innerHTML = `<div class="res">${esc(p[0])} ${esc(right)}</div>`
+    + `<table class="vt">` + forms.map((f, i) => `<tr><td>${PERS[i]}</td><td style="text-align:left;${i === p[2] ? 'font-weight:800' : ''}"><span class="${f !== nf[i] ? 'v' : ''}">${esc(f)}</span></td></tr>`).join('') + `</table>`
+    + (vTag(v) ? `<div class="rule">💡 ${esc(vTag(v))}</div>` : '');
+  $('#b-back').classList.remove('hide'); $('#b-tap').classList.add('hide'); $('#b-rate').classList.remove('hide');
+  speak(p[0] + ' ' + right);
+}
+function bRate(ok){
+  if (!B || !B.shown) return;
+  const id = B.queue.shift(); B.seen.add(id);
+  if (B.round === 1 || !ok) verbStat(id, !ok);
+  if (!ok){ B.failed.push(id); B.ever.add(id); }
+  bCard();
+}
+function bEnd(){
+  const run = B; B = null;
+  $('#b-run').classList.add('hide'); $('#b-start').classList.remove('hide');
+  finish(run, 'formas', k => { const {v, p} = vOf(k); return v ? `<div class="row"><div class="w">${esc(p[0])} ${esc(conj(v)[p[2]])}<small>${esc(v.inf)} · ${esc(v.es)}</small></div></div>` : ''; },
+    () => startB(), miss => startB(miss));
+}
+$('#b-go').onclick = () => startB();
+$('#b-card').onclick = e => { if (e.target.closest('#b-say')) return; bReveal(); };
+$('#b-say').onclick = () => { if (!B) return; const {v, p} = vOf(B.queue[0]); speak(B.shown ? p[0] + ' ' + conj(v)[p[2]] : v.inf); };
+$('#b-ok').onclick = () => bRate(true); $('#b-ko').onclick = () => bRate(false);
+$('#b-stop').onclick = () => { if (B && B.seen.size) bEnd(); else { B = null; setRunning(false); $('#b-run').classList.add('hide'); $('#b-start').classList.remove('hide'); } };
+
+/* ---------- ESTADÍSTICAS ---------- */
+const MODOS = {repaso: 'Repaso', articulos: 'Artículos', verbos: 'Verbos'};
+function renderStats(){
+  const ws = db.words, hard = ws.filter(w => (w.ko || 0) > 0).sort((a, b) => b.ko - a.ko);
+  const P = allProg(), last7 = P.sessions.filter(s => Date.now() - new Date(s.t) < 7 * 864e5);
+  $('#s-kpis').innerHTML = `<div class="kpi"><b>${ws.length}</b><span>palabras</span></div><div class="kpi"><b>${hard.length}</b><span>con fallos</span></div><div class="kpi"><b>${last7.length}</b><span>sesiones (7 días)</span></div>`;
+  $('#s-hard').classList.toggle('hide', !hard.length);
+  $('#s-words').innerHTML = hard.length ? hard.slice(0, 40).map(w => `<div class="row" data-say="${esc(sayAll(w))}"><div class="w">${pairHTML(w)}<small>${esc(w.es)}</small></div><span class="badge">×${w.ko}</span></div>`).join('') : '<div class="empty">Todavía no hay fallos. ¡A repasar!</div>';
+  const byTag = tags().map(t => { const all = ws.filter(w => w.tag === t), k = all.filter(w => w.ko > 0).length; return {t, all: all.length, k}; });
+  $('#s-tags').innerHTML = byTag.map(x => `<div class="row" style="display:block"><div style="display:flex;justify-content:space-between"><b>${esc(x.t)}</b><span style="color:var(--muted);font-size:14px">${x.k} de ${x.all} con fallos</span></div><div class="meter"><i style="width:${x.all ? Math.round(x.k / x.all * 100) : 0}%"></i></div></div>`).join('');
+  const hv = hardVerbs().slice(0, 15);
+  $('#s-verbs').innerHTML = hv.length ? hv.map(x => { const {v, p} = vOf(x.key); return v ? `<div class="row" data-say="${esc(p[0] + ' ' + conj(v)[p[2]])}"><div class="w">${esc(p[0])} ${esc(conj(v)[p[2]])}<small>${esc(v.inf)} · ${esc(p[1])} · falladas ${x.ko} de ${x.n}</small></div><span class="badge">×${x.ko}</span></div>` : ''; }).join('') : '<div class="empty">Todavía no has fallado ningún verbo.</div>';
+  const ss = P.sessions.slice(-12).reverse();
+  $('#s-sess').innerHTML = ss.length ? ss.map(s => { const d = new Date(s.t); return `<div class="row"><div class="w">${MODOS[s.mode] || s.mode}<small>${d.toLocaleDateString('es-ES', {weekday: 'short', day: 'numeric', month: 'short'})} · ${d.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})} · ${esc(s.dev || '')}</small></div><span style="font-weight:700">${s.first}/${s.n}</span></div>`; }).join('') : '<div class="empty">Aún no hay sesiones.</div>';
+}
+$('#v-stats').onclick = e => { const r = e.target.closest('[data-say]'); if (r) speak(r.dataset.say); };
+$('#s-hard').onclick = () => { settings.filter = '__hard'; saveSettings(); showView('repaso'); renderRStart(); startR(); };
+
+/* ---------- arranque ---------- */
+$('#login-btn').onclick = () => login(false);
+(async function init(){
+  if ('serviceWorker' in navigator && !DEMO) navigator.serviceWorker.register('sw.js').catch(() => {});
+  await handleRedirect();
+  const cached = LS.get('txt', null);
+  if (cached) loadTxt(cached);
+  // Cada día Microsoft pide renovar la sesión: se hace sola y sin preguntar (si el móvil sigue conectado a la cuenta)
+  if (!DEMO && navigator.onLine && LS.get('loggedOnce', false) && !(await getToken()) && !sessionStorage.getItem('md.silent')){
+    sessionStorage.setItem('md.silent', '1'); return login(true);
+  }
+  refreshStarts(); renderSync();
+  if (!db.words.length && !DEMO && !(await getToken())){
+    showView('login');
+    if (authMsg){ $('#login-msg').textContent = authMsg; $('#login-msg').classList.remove('hide'); }
+    return;
+  }
+  showView('repaso');
+  if (authMsg) toast(authMsg);
+  await syncAll();
+  if (!db.words.length && syncErr){ showView('login'); $('#login-msg').textContent = syncErr; $('#login-msg').classList.remove('hide'); }
+})();
+</script>
+</body>
+</html>
