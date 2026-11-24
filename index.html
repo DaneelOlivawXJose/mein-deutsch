@@ -49,6 +49,7 @@ label.f{display:block;font-size:13px;font-weight:700;color:var(--muted);margin:1
 .btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
 .btn.ko{background:var(--ko);border-color:var(--ko);color:#fff}
 .btn.small{padding:8px 12px;font-size:14px;border-radius:10px}
+.inp{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;background:var(--bg)}
 .toggle{display:flex;align-items:center;gap:10px;margin-top:16px;color:var(--muted);font-size:15px}
 .toggle input{width:22px;height:22px;accent-color:var(--accent)}
 .big-n{font-size:52px;font-weight:800;letter-spacing:-.03em;line-height:1}
@@ -114,11 +115,16 @@ label.f{display:block;font-size:13px;font-weight:700;color:var(--muted);margin:1
   <button class="sync" id="sync">…</button>
 </header>
 
-<!-- INICIO DE SESIÓN -->
+<!-- CONEXIÓN -->
 <section id="v-login" class="view pad">
-  <h2>Conecta tu OneDrive</h2>
-  <p class="sub">La app lee tus palabras de <b>palabras.txt</b> en tu OneDrive y guarda allí tus fallos, igual que la web del PC. Solo hay que hacerlo una vez.</p>
-  <button class="btn primary block" id="login-btn">Entrar con Microsoft</button>
+  <h2>Conecta el móvil</h2>
+  <p class="sub">Lo más fácil: en la web del PC, ve a <b>Mis palabras › 📱 Sincronizar con el móvil › Copiar enlace para el móvil</b> y abre ese enlace aquí. O rellena esto a mano:</p>
+  <div class="card">
+    <label class="f" style="margin-top:0">Usuario de GitHub</label><input class="inp" id="c-owner" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <label class="f">Repositorio privado</label><input class="inp" id="c-repo" value="mein-deutsch-datos" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <label class="f">Token (github_pat_…)</label><input class="inp" id="c-token" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+  </div>
+  <button class="btn primary block" id="login-btn">Conectar</button>
   <div class="warn hide" id="login-msg"></div>
 </section>
 
@@ -405,9 +411,27 @@ function vTag(v){
   const st = vStem(v);
   return /[td]$/.test(st) ? 'raíz en -t/-d' : /[sßzx]$/.test(st) ? 'raíz en -s/-ß/-z' : '';
 }
+const b64enc = s => { const b = new TextEncoder().encode(s); let t = ''; for (let i = 0; i < b.length; i += 0x8000) t += String.fromCharCode(...b.subarray(i, i + 0x8000)); return btoa(t); };
+const b64dec = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g, '')), c => c.charCodeAt(0)));
+async function ghGet(cfg, p){
+  const r = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${p}`, {cache: 'no-store', headers: {Authorization: 'Bearer ' + cfg.token, Accept: 'application/vnd.github+json'}});
+  if (r.status === 404) return null;
+  if (r.status === 401 || r.status === 403) throw new Error('GitHub no acepta el token (revisa que no haya caducado y que tenga permiso de escritura en ' + cfg.repo + ')');
+  if (!r.ok) throw new Error('GitHub respondió ' + r.status);
+  const j = await r.json();
+  return {txt: b64dec(j.content || ''), sha: j.sha};
+}
+async function ghPut(cfg, p, txt, sha){
+  const body = {message: 'Mein Deutsch: ' + p, content: b64enc(txt)}; if (sha) body.sha = sha;
+  const r = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${p}`, {method: 'PUT', headers: {Authorization: 'Bearer ' + cfg.token, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+  if (r.status === 409 || r.status === 422) return 'conflict';     // alguien lo ha cambiado a la vez
+  if (r.status === 401 || r.status === 403 || r.status === 404) throw new Error('GitHub no deja guardar (revisa el token: permiso «Contents: Read and write» en ' + cfg.repo + ')');
+  if (!r.ok) throw new Error('GitHub respondió ' + r.status + ' al guardar');
+  return (await r.json()).content.sha;
+}
 /* ===== Fin del código común ===== */
 
-const CONFIG = {clientId: 'PENDIENTE', words: '/Escritorio/Aleman/palabras.txt', prog: '/Escritorio/Aleman/progreso.json'};
+const CONFIG = {words: 'palabras.txt', prog: 'progreso.json'};
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const DEMO = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).has('demo');
 const LS = {
@@ -451,83 +475,24 @@ async function keepAwake(on){
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && document.body.classList.contains('running')) keepAwake(true); });
 
-/* ---------- inicio de sesión con Microsoft (OAuth con PKCE, sin librerías) ---------- */
-const AUTH = 'https://login.microsoftonline.com/common/oauth2/v2.0';
-const SCOPE = 'https://graph.microsoft.com/Files.ReadWrite offline_access';
-const REDIRECT = location.origin + location.pathname;
-let tok = LS.get('tok', null), authMsg = '';
-const saveTok = () => LS.set('tok', tok);
-const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-async function login(silent){
-  const v = b64u(crypto.getRandomValues(new Uint8Array(32)));
-  const ch = b64u(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v)));
-  const st = b64u(crypto.getRandomValues(new Uint8Array(12)));
-  sessionStorage.setItem('md.pkce', JSON.stringify({v, st}));
-  const q = new URLSearchParams({client_id: CONFIG.clientId, response_type: 'code', redirect_uri: REDIRECT, response_mode: 'query',
-    scope: SCOPE, code_challenge: ch, code_challenge_method: 'S256', state: st, prompt: silent ? 'none' : 'select_account'});
-  location.href = AUTH + '/authorize?' + q;
+/* ---------- conexión con GitHub (repositorio privado donde la web del PC deja la copia de palabras.txt) ---------- */
+// ghGet, ghPut, b64enc y b64dec vienen del código común (index.html)
+let gh = LS.get('gh', null);
+function readLink(){
+  const m = location.hash.match(/conectar=([^&]+)/);
+  if (!m) return;
+  history.replaceState(null, '', location.pathname + location.search);
+  try { const c = JSON.parse(b64dec(decodeURIComponent(m[1]))); if (c.owner && c.repo && c.token){ gh = c; LS.set('gh', gh); LS.set('lastSync', 0); toast('✓ Móvil conectado'); } }
+  catch(e){ toast('El enlace no es válido'); }
 }
-async function tokenReq(params){
-  const r = await fetch(AUTH + '/token', {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-    body: new URLSearchParams(Object.assign({client_id: CONFIG.clientId, scope: SCOPE}, params))});
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok || !j.access_token){
-    if (params.grant_type === 'refresh_token'){ tok = null; saveTok(); }
-    throw new Error(j.error_description ? j.error_description.split('\n')[0] : 'No se pudo iniciar sesión');
-  }
-  tok = {access: j.access_token, exp: Date.now() + (j.expires_in - 120) * 1000, refresh: j.refresh_token || (tok && tok.refresh)};
-  saveTok(); LS.set('loggedOnce', true);
-  return tok.access;
-}
-async function handleRedirect(){
-  const q = new URLSearchParams(location.search);
-  if (!q.has('code') && !q.has('error')) return;
-  history.replaceState(null, '', REDIRECT);
-  const p = JSON.parse(sessionStorage.getItem('md.pkce') || 'null'); sessionStorage.removeItem('md.pkce');
-  if (q.has('error')){
-    const e = q.get('error');
-    authMsg = /login_required|interaction_required|consent_required/.test(e) ? '' : (q.get('error_description') || e);
-    return;
-  }
-  if (!p || p.st !== q.get('state')) { authMsg = 'La respuesta del inicio de sesión no es válida. Inténtalo otra vez.'; return; }
-  try { await tokenReq({grant_type: 'authorization_code', code: q.get('code'), redirect_uri: REDIRECT, code_verifier: p.v}); }
-  catch(e){ authMsg = e.message; }
-}
-async function getToken(){
-  if (DEMO) return 'demo';
-  if (tok && tok.access && Date.now() < tok.exp) return tok.access;
-  if (tok && tok.refresh && navigator.onLine){ try { return await tokenReq({grant_type: 'refresh_token', refresh_token: tok.refresh}); } catch(e){} }
-  return null;
-}
-
-/* ---------- OneDrive (Microsoft Graph) ---------- */
-const gUrl = p => 'https://graph.microsoft.com/v1.0/me/drive/root:' + p.split('/').map(encodeURIComponent).join('/');
-async function gFetch(url, opt = {}, retry = true){
-  const t = await getToken(); if (!t) throw new Error('login');
-  const r = await fetch(url, Object.assign({}, opt, {headers: Object.assign({Authorization: 'Bearer ' + t}, opt.headers || {})}));
-  if (r.status === 401 && retry){ if (tok) { tok.access = null; saveTok(); } return gFetch(url, opt, false); }
-  return r;
-}
+const connected = () => DEMO || !!gh;
 async function gGet(p){
   if (DEMO) return demoGet(p);
-  const r = await gFetch(gUrl(p));
-  if (r.status === 404) return null;
-  if (!r.ok) throw new Error('OneDrive respondió ' + r.status);
-  const m = await r.json();
-  const c = await fetch(m['@microsoft.graph.downloadUrl'], {cache: 'no-store'});
-  if (!c.ok) throw new Error('No se pudo descargar ' + p.split('/').pop());
-  return {txt: await c.text(), etag: m.eTag};
+  const r = await ghGet(gh, p);
+  return r && {txt: r.txt, etag: r.sha};
 }
-async function gPut(p, body, etag){
-  if (DEMO) return demoPut(p, body, etag);
-  const h = {'Content-Type': p.endsWith('.json') ? 'application/json' : 'text/plain; charset=utf-8'};
-  if (etag) h['If-Match'] = etag;
-  const r = await gFetch(gUrl(p) + ':/content', {method: 'PUT', headers: h, body});
-  if (r.status === 412 || r.status === 409) return 'conflict';
-  if (!r.ok) throw new Error('OneDrive respondió ' + r.status + ' al guardar');
-  return (await r.json()).eTag;
-}
-// Modo demo (solo en el PC, con ?demo): «OneDrive» simulado en localStorage, empezando por ../palabras.txt
+async function gPut(p, body, etag){ return DEMO ? demoPut(p, body, etag) : ghPut(gh, p, body, etag); }
+// Modo demo (solo en el PC, con ?demo): GitHub simulado en localStorage, empezando por ../palabras.txt
 async function demoGet(p){
   const s = LS.get('demo:' + p, null);
   if (s) return s;
@@ -573,16 +538,16 @@ function scheduleSync(ms = 4000){ clearTimeout(syncTimer); syncTimer = setTimeou
 async function syncAll(){
   if (syncing) return;
   if (!navigator.onLine){ renderSync(); return; }
-  if (!(await getToken())){ renderSync(); return; }
+  if (!connected()){ renderSync(); return; }
   syncing = true; syncErr = ''; renderSync();
   try { await syncWords(); await syncProg(); lastSync = Date.now(); LS.set('lastSync', lastSync); }
-  catch(e){ syncErr = e.message === 'login' ? '' : e.message; }
+  catch(e){ syncErr = /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? 'sin conexión con GitHub' : e.message; }
   syncing = false; renderSync();
 }
 async function syncWords(){
   for (let i = 0; i < 4; i++){
     const f = await gGet(CONFIG.words);
-    if (!f) throw new Error('No encuentro ' + CONFIG.words + ' en tu OneDrive');
+    if (!f) throw new Error('Todavía no hay palabras en GitHub: abre la web del PC y conéctala al móvil');
     const applied = Object.assign({}, deltas);
     let txt = f.txt;
     if (Object.keys(applied).length){
@@ -630,8 +595,7 @@ function renderSync(){
   const b = $('#sync'), n = pendingCount();
   let t, warn = false;
   if (DEMO) t = '🧪 Demo' + (n ? ` · ${n} por subir` : ' · sincronizado');
-  else if (!tok && !LS.get('loggedOnce', false)) { t = '🔑 Conectar OneDrive'; warn = true; }
-  else if (!tok) { t = '🔑 Vuelve a entrar' + (n ? ` · ${n} por subir` : ''); warn = true; }
+  else if (!gh) { t = '🔑 Sin conectar'; warn = true; }
   else if (syncing) t = '⏳ Sincronizando…';
   else if (!navigator.onLine) { t = '📴 Sin conexión' + (n ? ` · ${n} por subir` : ''); warn = !!n; }
   else if (syncErr) { t = '⚠️ ' + syncErr; warn = true; }
@@ -640,7 +604,7 @@ function renderSync(){
   b.textContent = t; b.classList.toggle('warn', warn);
 }
 const hace = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'ahora' : m < 60 ? `hace ${m} min` : m < 1440 ? `hace ${Math.round(m / 60)} h` : `hace ${Math.round(m / 1440)} d`; };
-$('#sync').onclick = () => { if (!DEMO && !tok) return login(false); syncAll(); };
+$('#sync').onclick = () => { if (!connected()) return showView('login'); if (syncErr) toast(syncErr); syncAll(); };
 window.addEventListener('online', () => syncAll());
 window.addEventListener('offline', renderSync);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !busy()) syncAll(); });
@@ -916,24 +880,23 @@ $('#v-stats').onclick = e => { const r = e.target.closest('[data-say]'); if (r) 
 $('#s-hard').onclick = () => { settings.filter = '__hard'; saveSettings(); showView('repaso'); renderRStart(); startR(); };
 
 /* ---------- arranque ---------- */
-$('#login-btn').onclick = () => login(false);
+$('#login-btn').onclick = async () => {
+  const c = {owner: $('#c-owner').value.trim().replace(/^@/, ''), repo: $('#c-repo').value.trim(), token: $('#c-token').value.trim()};
+  const msg = $('#login-msg');
+  if (!c.owner || !c.repo || !c.token){ msg.textContent = 'Rellena los tres campos.'; msg.classList.remove('hide'); return; }
+  gh = c; LS.set('gh', gh); syncErr = ''; await syncAll();
+  if (syncErr){ msg.textContent = syncErr; msg.classList.remove('hide'); if (!db.words.length) return; }
+  msg.classList.add('hide'); showView('repaso'); refreshStarts();
+};
+window.addEventListener('hashchange', () => { if (/conectar=/.test(location.hash)){ readLink(); renderSync(); syncAll().then(() => { if (db.words.length) { showView('repaso'); refreshStarts(); } }); } });
 (async function init(){
   if ('serviceWorker' in navigator && !DEMO) navigator.serviceWorker.register('sw.js').catch(() => {});
-  await handleRedirect();
+  readLink();
   const cached = LS.get('txt', null);
   if (cached) loadTxt(cached);
-  // Cada día Microsoft pide renovar la sesión: se hace sola y sin preguntar (si el móvil sigue conectado a la cuenta)
-  if (!DEMO && navigator.onLine && LS.get('loggedOnce', false) && !(await getToken()) && !sessionStorage.getItem('md.silent')){
-    sessionStorage.setItem('md.silent', '1'); return login(true);
-  }
   refreshStarts(); renderSync();
-  if (!db.words.length && !DEMO && !(await getToken())){
-    showView('login');
-    if (authMsg){ $('#login-msg').textContent = authMsg; $('#login-msg').classList.remove('hide'); }
-    return;
-  }
+  if (!db.words.length && !connected()){ showView('login'); return; }
   showView('repaso');
-  if (authMsg) toast(authMsg);
   await syncAll();
   if (!db.words.length && syncErr){ showView('login'); $('#login-msg').textContent = syncErr; $('#login-msg').classList.remove('hide'); }
 })();
