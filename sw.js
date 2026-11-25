@@ -1,7 +1,7 @@
 // Service worker: permite abrir la app sin cobertura.
 // La página se pide primero a la red (para recibir actualizaciones) y, si no hay red, sale de la caché.
 // Las llamadas a Microsoft (OneDrive, inicio de sesión) nunca se guardan en caché.
-const CACHE = 'mein-deutsch-1795531749844';
+const CACHE = 'mein-deutsch-1795597974925';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icono-192.png', './icono-512.png'];
 
 self.addEventListener('install', e => {

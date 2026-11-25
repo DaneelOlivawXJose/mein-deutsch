@@ -396,6 +396,9 @@ const VERBS = [
   {inf:'kosten', es:'costar'}, {inf:'feiern', es:'celebrar', t:'-ern: wir feiern'},
   {inf:'würfeln', es:'tirar el dado', f:['würfle','würfelst','würfelt','würfeln','würfelt','würfeln'], t:'-eln: ich würfle'},
   {inf:'sammeln', es:'recoger, reunir', f:['sammle','sammelst','sammelt','sammeln','sammelt','sammeln'], t:'-eln: ich sammle'},
+  {inf:'kennen', es:'conocer'}, {inf:'nennen', es:'nombrar, mencionar'}, {inf:'finden', es:'encontrar; parecer'},
+  {inf:'zeigen', es:'mostrar, enseñar'},
+  {inf:'zeichnen', es:'dibujar', f:['zeichne','zeichnest','zeichnet','zeichnen','zeichnet','zeichnen'], t:'-chnen: du zeichnest'},
 ];
 const PERS = ['ich','du','er/sie/es','wir','ihr','sie/Sie'], PSAY = ['ich','du','er','wir','ihr','sie'];
 const PRON = [['ich','yo',0],['du','tú',1],['er','él',2],['sie','ella',2],['wir','nosotros',3],['ihr','vosotros',4],['sie','ellos',5],['Sie','usted',5]];
@@ -415,7 +418,12 @@ const b64enc = s => { const b = new TextEncoder().encode(s); let t = ''; for (le
 const b64dec = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g, '')), c => c.charCodeAt(0)));
 async function ghGet(cfg, p){
   const r = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${p}`, {cache: 'no-store', headers: {Authorization: 'Bearer ' + cfg.token, Accept: 'application/vnd.github+json'}});
-  if (r.status === 404) return null;
+  if (r.status === 404){
+    // ¿falta el archivo o no se ve el repositorio? (GitHub también da 404 si el token no tiene acceso)
+    const q = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}`, {cache: 'no-store', headers: {Authorization: 'Bearer ' + cfg.token, Accept: 'application/vnd.github+json'}});
+    if (q.status === 404) throw new Error(`No veo el repositorio ${cfg.owner}/${cfg.repo}: revisa el nombre y que el token tenga acceso a él`);
+    return null;
+  }
   if (r.status === 401 || r.status === 403) throw new Error('GitHub no acepta el token (revisa que no haya caducado y que tenga permiso de escritura en ' + cfg.repo + ')');
   if (!r.ok) throw new Error('GitHub respondió ' + r.status);
   const j = await r.json();
