@@ -670,6 +670,8 @@ async function syncWords(){
   for (let i = 0; i < 4; i++){
     const f = await gGet(CONFIG.words);
     if (!f) throw new Error('Todavía no hay palabras en GitHub: abre la web del PC y conéctala al móvil');
+    // Copia vacía en GitHub (p. ej. la web del PC se abrió sin permiso para leer el archivo): no se toca nada
+    if (!fromTxt(f.txt).length) throw new Error('La copia de GitHub está vacía: abre la web del PC con tu palabras.txt y se vuelve a subir sola');
     const applied = Object.assign({}, deltas);
     let txt = f.txt;
     if (Object.keys(applied).length){

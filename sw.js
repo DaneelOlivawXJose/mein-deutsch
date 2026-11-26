@@ -2,7 +2,7 @@
 // La página se pide primero a la red (para recibir actualizaciones) y, si no hay red, sale de la caché.
 // Las llamadas a GitHub nunca se guardan en caché. Las fotos (upload/thumb.wikimedia.org) se guardan en «md-fotos»
 // la primera vez que se ven, para que luego salgan también sin cobertura.
-const CACHE = 'mein-deutsch-1795701804288';
+const CACHE = 'mein-deutsch-1795703813567';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icono-192.png', './icono-512.png'];
 
 self.addEventListener('install', e => {
