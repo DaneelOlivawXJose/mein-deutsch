@@ -75,6 +75,10 @@ label.f{display:block;font-size:13px;font-weight:700;color:var(--muted);margin:1
 .answer{margin-top:20px;padding-top:18px;border-top:1px dashed var(--line);width:100%}
 .answer .es{font-size:24px;font-weight:700}
 .answer .ex{margin-top:10px;color:var(--muted);font-style:italic}
+.pic{margin:12px auto 0;max-width:360px}
+.pic img{display:block;width:100%;max-height:34vh;object-fit:contain;border-radius:12px;background:var(--soft)}
+.pic-btns{display:flex;gap:6px;justify-content:center;margin-top:4px}
+.pic-btns button{border:0;background:none;color:var(--muted);font-size:13px;padding:8px 10px;border-radius:8px}
 .tap{margin-top:26px;color:var(--muted);font-size:14px}
 .rule{margin-top:10px;color:var(--muted);font-size:15px}
 .res{font-size:24px;font-weight:800}
@@ -402,6 +406,54 @@ const VERBS = [
   {inf:'möchten', es:'querer (cortés), me gustaría', f:['möchte','möchtest','möchte','möchten','möchtet','möchten'], t:'modal: er möchte (sin -t)'},
   {inf:'dirigieren', es:'dirigir (una orquesta)'}, {inf:'präsentieren', es:'presentar'},
   {inf:'nummerieren', es:'numerar'}, {inf:'recherchieren', es:'investigar, buscar información'},
+  // A1 Goethe
+  {inf:'können', es:'poder, saber hacer', f:['kann','kannst','kann','können','könnt','können'], t:'modal: ich/er kann (sin -e ni -t)'},
+  {inf:'müssen', es:'tener que', f:['muss','musst','muss','müssen','müsst','müssen'], t:'modal: ich/er muss'},
+  {inf:'wollen', es:'querer', f:['will','willst','will','wollen','wollt','wollen'], t:'modal: ich/er will'},
+  {inf:'dürfen', es:'poder (tener permiso)', f:['darf','darfst','darf','dürfen','dürft','dürfen'], t:'modal: ich/er darf'},
+  {inf:'mögen', es:'gustar (cosas y personas)', f:['mag','magst','mag','mögen','mögt','mögen'], t:'modal: ich/er mag'},
+  {inf:'wissen', es:'saber (un dato)', f:['weiß','weißt','weiß','wissen','wisst','wissen'], t:'irregular: ich/er weiß'},
+  {inf:'tun', es:'hacer', f:['tue','tust','tut','tun','tut','tun'], t:'irregular: wir tun'},
+  {inf:'geben', es:'dar', v:'gib', t:'e → i'}, {inf:'helfen', es:'ayudar', v:'hilf', t:'e → i'},
+  {inf:'nehmen', es:'coger, tomar', f:['nehme','nimmst','nimmt','nehmen','nehmt','nehmen'], t:'e → i (nimmst)'},
+  {inf:'treffen', es:'quedar con, encontrarse', v:'triff', t:'e → i'},
+  {inf:'essen', es:'comer', v:'iss', t:'e → i (du isst)'}, {inf:'vergessen', es:'olvidar', v:'vergiss', t:'e → i (du vergisst)'},
+  {inf:'schlafen', es:'dormir', v:'schläf', t:'a → ä'}, {inf:'tragen', es:'llevar (ropa); cargar', v:'träg', t:'a → ä'},
+  {inf:'waschen', es:'lavar', v:'wäsch', t:'a → ä'}, {inf:'gefallen', es:'gustar, agradar', v:'gefäll', t:'a → ä'},
+  {inf:'laufen', es:'correr; andar', v:'läuf', t:'au → äu'},
+  {inf:'öffnen', es:'abrir', f:['öffne','öffnest','öffnet','öffnen','öffnet','öffnen'], t:'-fnen: du öffnest'},
+  {inf:'dauern', es:'durar', t:'-ern: wir dauern'}, {inf:'wandern', es:'hacer senderismo', t:'-ern: wir wandern'},
+  {inf:'trinken', es:'beber'}, {inf:'kaufen', es:'comprar'}, {inf:'brauchen', es:'necesitar'},
+  {inf:'bringen', es:'traer, llevar'}, {inf:'holen', es:'ir a buscar, traer'}, {inf:'leben', es:'vivir'},
+  {inf:'sitzen', es:'estar sentado'}, {inf:'stehen', es:'estar de pie; estar (colocado)'}, {inf:'liegen', es:'estar tumbado; estar (situado)'},
+  {inf:'schließen', es:'cerrar'}, {inf:'beginnen', es:'empezar'}, {inf:'verlieren', es:'perder'},
+  {inf:'lieben', es:'amar, encantar'}, {inf:'denken', es:'pensar'}, {inf:'glauben', es:'creer'}, {inf:'bleiben', es:'quedarse'},
+  {inf:'duschen', es:'ducharse'}, {inf:'putzen', es:'limpiar'}, {inf:'rauchen', es:'fumar'}, {inf:'heiraten', es:'casarse'},
+  {inf:'bekommen', es:'recibir'}, {inf:'benutzen', es:'usar'}, {inf:'verdienen', es:'ganar (dinero)'},
+  {inf:'telefonieren', es:'hablar por teléfono'}, {inf:'antworten', es:'responder'}, {inf:'verstehen', es:'entender'},
+  {inf:'wiederholen', es:'repetir'}, {inf:'erzählen', es:'contar, relatar'}, {inf:'fliegen', es:'volar'}, {inf:'buchen', es:'reservar'},
+  {inf:'besuchen', es:'visitar'}, {inf:'mieten', es:'alquilar'}, {inf:'frühstücken', es:'desayunar'},
+  {inf:'schmecken', es:'saber (bien/mal)'}, {inf:'bestellen', es:'pedir (en un bar)'}, {inf:'bezahlen', es:'pagar'},
+  // A2 Goethe
+  {inf:'sterben', es:'morir', v:'stirb', t:'e → i'}, {inf:'fallen', es:'caer', v:'fäll', t:'a → ä'},
+  {inf:'braten', es:'freír, asar', f:['brate','brätst','brät','braten','bratet','braten'], t:'a → ä (er brät)'},
+  {inf:'klingeln', es:'llamar al timbre; sonar', f:['klingle','klingelst','klingelt','klingeln','klingelt','klingeln'], t:'-eln: ich klingle'},
+  {inf:'speichern', es:'guardar (un archivo)', t:'-ern: wir speichern'},
+  {inf:'studieren', es:'estudiar (en la universidad)'}, {inf:'erledigen', es:'hacer, despachar'}, {inf:'kündigen', es:'dejar el trabajo; despedir'},
+  {inf:'drucken', es:'imprimir'}, {inf:'kopieren', es:'copiar, fotocopiar'}, {inf:'reservieren', es:'reservar'}, {inf:'probieren', es:'probar'},
+  {inf:'backen', es:'hornear'}, {inf:'schneiden', es:'cortar'}, {inf:'überweisen', es:'hacer una transferencia'}, {inf:'schicken', es:'enviar'},
+  {inf:'übernachten', es:'pasar la noche'}, {inf:'besichtigen', es:'visitar (un monumento)'}, {inf:'packen', es:'hacer la maleta'},
+  {inf:'verpassen', es:'perder (un tren, una cita)'}, {inf:'landen', es:'aterrizar'}, {inf:'tanken', es:'echar gasolina'}, {inf:'parken', es:'aparcar'},
+  {inf:'zelten', es:'acampar'}, {inf:'chatten', es:'chatear'}, {inf:'unterschreiben', es:'firmar'}, {inf:'gewinnen', es:'ganar'},
+  {inf:'trainieren', es:'entrenar'}, {inf:'malen', es:'pintar'}, {inf:'schenken', es:'regalar'}, {inf:'gratulieren', es:'felicitar'},
+  {inf:'wünschen', es:'desear'}, {inf:'hoffen', es:'esperar (tener esperanza)'}, {inf:'träumen', es:'soñar'},
+  {inf:'erklären', es:'explicar'}, {inf:'beschreiben', es:'describir'}, {inf:'vergleichen', es:'comparar'}, {inf:'entscheiden', es:'decidir'},
+  {inf:'versuchen', es:'intentar'}, {inf:'erreichen', es:'alcanzar; localizar'}, {inf:'sparen', es:'ahorrar'}, {inf:'leihen', es:'prestar'},
+  {inf:'funktionieren', es:'funcionar'}, {inf:'reparieren', es:'reparar'}, {inf:'passieren', es:'pasar, ocurrir'}, {inf:'gehören', es:'pertenecer, ser de'},
+  {inf:'erlauben', es:'permitir'}, {inf:'verbieten', es:'prohibir'}, {inf:'üben', es:'practicar'}, {inf:'korrigieren', es:'corregir'},
+  {inf:'vermissen', es:'echar de menos'}, {inf:'bauen', es:'construir'}, {inf:'wählen', es:'elegir; votar'}, {inf:'legen', es:'poner (tumbado)'},
+  {inf:'stellen', es:'poner (de pie)'}, {inf:'hängen', es:'colgar'}, {inf:'ziehen', es:'tirar (de una puerta)'}, {inf:'drücken', es:'empujar; pulsar'},
+  {inf:'klappen', es:'salir bien, funcionar'}, {inf:'untersuchen', es:'examinar, reconocer'},
 ];
 const PERS = ['ich','du','er/sie/es','wir','ihr','sie/Sie'], PSAY = ['ich','du','er','wir','ihr','sie'];
 const PRON = [['ich','yo',0],['du','tú',1],['er','él',2],['sie','ella',2],['wir','nosotros',3],['ihr','vosotros',4],['sie','ellos',5],['Sie','usted',5]];
@@ -439,6 +491,65 @@ async function ghPut(cfg, p, txt, sha){
   if (r.status === 401 || r.status === 403 || r.status === 404) throw new Error('GitHub no deja guardar (revisa el token: permiso «Contents: Read and write» en ' + cfg.repo + ')');
   if (!r.ok) throw new Error('GitHub respondió ' + r.status + ' al guardar');
   return (await r.json()).content.sha;
+}
+const PICS = {ls:'mein-deutsch.fotos', d:null, busy:new Map()};
+function picStore(){ if (!PICS.d){ try { PICS.d = JSON.parse(localStorage.getItem(PICS.ls) || '{}'); } catch(e){ PICS.d = {}; } } return PICS.d; }
+function picSave(){ try { localStorage.setItem(PICS.ls, JSON.stringify(PICS.d)); } catch(e){} }
+const picKey = w => ((w.art||'') + '|' + w.de).toLowerCase();
+const esTitle = es => String(es||'').split(/[;,/(]/)[0].trim().replace(/^(el|la|los|las|lo|un|una)\s+/i, '');
+async function wikiApi(host, params){
+  const r = await fetch(`https://${host}/w/api.php?` + new URLSearchParams(Object.assign({action:'query', format:'json', origin:'*'}, params)));
+  if (!r.ok) throw new Error('wiki ' + r.status);
+  return r.json();
+}
+async function wikiThumb(host, title){
+  if (!title) return null;
+  const d = await wikiApi(host, {titles:title, redirects:1, prop:'pageimages', piprop:'thumbnail', pithumbsize:500});
+  const p = Object.values((d.query && d.query.pages) || {})[0];
+  return (p && p.thumbnail && p.thumbnail.source) || null;
+}
+function picFind(w){
+  const st = picStore(), k = picKey(w);
+  if (st[k]) return Promise.resolve(st[k]);
+  if (PICS.busy.has(k)) return PICS.busy.get(k);
+  const p = Promise.allSettled([wikiThumb('de.wikipedia.org', w.de), wikiThumb('es.wikipedia.org', esTitle(w.es))]).then(rs => {
+    if (rs.every(r => r.status === 'rejected')) return null; // sin conexión: se vuelve a intentar otro día
+    const c = [...new Set(rs.map(r => r.value).filter(Boolean))];
+    st[k] = {c, i: c.length ? 0 : -1}; picSave(); return st[k];
+  }).finally(() => PICS.busy.delete(k));
+  PICS.busy.set(k, p); return p;
+}
+async function picMore(w){
+  const e = picStore()[picKey(w)];
+  if (!e || e.more) return e;
+  const qs = [...new Set([w.de, esTitle(w.es)].filter(Boolean))];
+  const ds = await Promise.all(qs.map(q => wikiApi('commons.wikimedia.org', {generator:'search', gsrsearch:q + ' filetype:bitmap', gsrnamespace:6, gsrlimit:6, prop:'imageinfo', iiprop:'url', iiurlwidth:500})));
+  const urls = ds.flatMap(d => Object.values((d.query && d.query.pages) || {}).sort((a, b) => a.index - b.index).map(p => p.imageinfo && p.imageinfo[0] && p.imageinfo[0].thumburl)).filter(Boolean);
+  e.c = [...new Set([...e.c, ...urls])]; e.more = true; picSave(); return e;
+}
+function picPrefetch(w){ if (w && w.art) picFind(w).then(e => { if (e && e.i >= 0) new Image().src = e.c[e.i]; }).catch(() => {}); }
+function picMount(el, w){
+  if (!el) return;
+  if (!w || !w.art){ el.innerHTML = ''; return; }
+  const draw = e => {
+    if (!el.isConnected) return;
+    const url = e.i >= 0 ? e.c[e.i] : null;
+    el.innerHTML = (url ? `<img src="${esc(url)}" alt="" referrerpolicy="no-referrer">` : '')
+      + `<div class="pic-btns">` + (url ? `<button type="button" data-p="next">🔄 Otra foto</button><button type="button" data-p="off">🚫 Sin foto</button>` : `<button type="button" data-p="next">📷 Buscar foto</button>`) + `</div>`;
+    const img = el.querySelector('img');
+    if (img) img.onerror = () => { e.c.splice(e.i, 1); e.i = e.c.length ? e.i % e.c.length : -1; picSave(); draw(e); };
+    el.querySelectorAll('[data-p]').forEach(b => b.onclick = async ev => {
+      ev.stopPropagation(); b.blur();
+      if (b.dataset.p === 'off'){ e.i = -1; picSave(); return draw(e); }
+      b.disabled = true; b.textContent = 'Buscando…';
+      try { await picMore(w); } catch(_){}
+      if (e.c.length) e.i = e.i < 0 ? 0 : (e.i + 1) % e.c.length;
+      picSave(); draw(e);
+      if (!e.c.length){ const nb = el.querySelector('[data-p]'); nb.textContent = 'No he encontrado fotos'; nb.disabled = true; }
+    });
+  };
+  el.innerHTML = '';
+  picFind(w).then(e => { if (e) draw(e); }).catch(() => {});
 }
 /* ===== Fin del código común ===== */
 
@@ -705,7 +816,8 @@ function rCard(){
   const deSide = `<div class="word">${pairHTML(w)}</div>${formsHTML(w)}`;
   const esSide = `<div class="word" style="font-size:clamp(26px,8vw,38px)">${esc(w.es)}</div>`;
   $('#r-front').innerHTML = settings.dir === 'de' ? deSide : esSide;
-  $('#r-back').innerHTML = (settings.dir === 'de' ? `<div class="es">${esc(w.es)}</div>` : deSide) + (w.ex ? `<div class="ex">“${esc(w.ex)}”</div>` : '');
+  $('#r-back').innerHTML = (settings.dir === 'de' ? `<div class="es">${esc(w.es)}</div>` : deSide) + (w.ex ? `<div class="ex">“${esc(w.ex)}”</div>` : '') + (w.art ? '<div class="pic"></div>' : '');
+  picMount($('#r-back .pic'), w); picPrefetch(byId(R.queue[1]));
   $('#r-back').classList.add('hide'); $('#r-tap').classList.remove('hide'); $('#r-rate').classList.add('hide');
   $('#r-say').classList.toggle('hide', settings.dir !== 'de');
   if (settings.dir === 'de' && settings.auto) speak(sayAll(w));
